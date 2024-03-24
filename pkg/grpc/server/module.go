@@ -7,14 +7,16 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/deep-quality-dev/cosmos-grpc-forwarder/pkg/configs"
+	"github.com/deep-quality-dev/cosmos-grpc-forwarder/pkg/jsonconv"
 	"github.com/deep-quality-dev/cosmos-grpc-forwarder/pkg/log"
 )
 
-// InitialiazeNewGRPCServer oeuoeu
+// InitialiazeNewGRPCServer initializes the gRPC server module.
 func InitialiazeNewGRPCServer(
 	ctx context.Context,
 	conf *configs.Config,
 	logger log.Logger,
+	jsonConverter *jsonconv.JSONConverter,
 ) *Server {
 	serverAddress := fmt.Sprintf("%s:%d", conf.ServerHost, conf.ServerPort)
 
@@ -29,7 +31,7 @@ func InitialiazeNewGRPCServer(
 		lis,
 		logger,
 		[]grpc.UnaryServerInterceptor{
-			//NewLoggingInterceptor(logger),
+			NewLoggingInterceptor(logger, jsonConverter),
 		},
 	)
 }

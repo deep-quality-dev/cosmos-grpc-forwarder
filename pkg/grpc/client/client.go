@@ -3,11 +3,16 @@ package client
 import (
 	"context"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/deep-quality-dev/cosmos-grpc-forwarder/pkg/jsonconv"
+	"github.com/deep-quality-dev/cosmos-grpc-forwarder/pkg/log"
 )
 
-// NewGRPCConn creates a new instance of a gRPC client connection using a context
+// NewGRPCConn creates a new instance of a gRPC client connection using a context.
 func NewGRPCConn(
 	ctx context.Context,
 	serverAddr string,
@@ -27,4 +32,25 @@ func NewGRPCConn(
 	}
 
 	return conn, nil
+}
+
+// NewDefaultGRPCConn is a constructor function with sane defaults for gRPC options and interceptors.
+func NewDefaultGRPCConn(
+	ctx context.Context,
+	logger log.Logger,
+	jsonConverter *jsonconv.JSONConverter,
+	serverAddr string,
+) (*grpc.ClientConn, error) {
+	return NewGRPCConn(
+		ctx,
+		serverAddr,
+		[]grpc.UnaryClientInterceptor{
+			NewLoggingInterceptor(logger, jsonConverter),
+		},
+		// The Cosmos SDK doesn't support any transport security mechanism.
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		// This instantiates a general gRPC codec which handles proto bytes. We pass in a nil interface registry
+		// if the request/response types contain interface instead of 'nil' you should pass the application specific codec.
+		grpc.WithDefaultCallOptions(grpc.ForceCodec(codec.NewProtoCodec(nil).GRPCCodec())),
+	)
 }
