@@ -32,7 +32,6 @@ func NewLoggingInterceptor(logger log.Logger, jsonConverter *jsonconv.JSONConver
 					log.String("request", string(reqJSON)),
 					log.Error(err),
 				)
-				//panic(err)
 			}
 		}()
 

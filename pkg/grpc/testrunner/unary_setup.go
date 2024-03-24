@@ -96,6 +96,7 @@ func NewUnaryTestSetup(
 		grpc.WithContextDialer(getBufDialer(lis)),
 	)
 
+	//nolint:errcheck
 	closer := func() {
 		lis.Close()
 		grpcServer.Shutdown(ctx)
